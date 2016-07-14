@@ -1,12 +1,15 @@
 from flask import Flask, render_template, redirect, request, flash, session
 from datetime import datetime
 from mysqlconnection import MySQLConnector
+from flask.ext.bcrypt import Bcrypt
 import os
 import re
 
+
 app=Flask(__name__)
+bcrypt=Bcrypt(app) ##Encryption
 mysql=MySQLConnector(app, 'the_wall')
-app.secret_key=os.urandom(24)
+app.secret_key=os.urandom(24) ##session
 
 EMAIL_REGEX = re.compile(r'^[a-zA-Z0-9\.\+_-]+@[a-zA-Z0-9\._-]+\.[a-zA-Z]*$')
 PASSWORD_REGEX=re.compile(r'^([0-9]+[a-zA-Z]+|[a-zA-Z]+[0-9]+)[0-9a-zA-Z]*$')
@@ -73,17 +76,18 @@ def register():
         valid=False
 
     if valid==True:
+        pw_hash = bcrypt.generate_password_hash(password)
         data_registered = {
                         'first_name':  first_name,
                         'last_name': last_name,
                         'email': email,
-                        'password': password
+                        'pw_hash': pw_hash
                         }
         query_check_email_exists = 'SELECT email from users where email = :email'
         query_email_compare = mysql.query_db(query_check_email_exists, data_registered)
 
         if not query_email_compare:
-            query_insert_new_user = 'INSERT INTO users (first_name, last_name, email, password) Values (:first_name, :last_name, :email, :password)'
+            query_insert_new_user = 'INSERT INTO users (first_name, last_name, email, pw_hash) Values (:first_name, :last_name, :email, :pw_hash)'
             mysql.query_db(query_insert_new_user, data_registered)
             flash('Registration Success!', 'register')
         else:
@@ -111,6 +115,7 @@ def login():
         if not value:
             required_fields=False
             valid=False
+
     if required_fields==False:
         flash('All fields are required', 'login')
         print 'empty fields'
@@ -121,7 +126,7 @@ def login():
 
     if valid==True:
         print 'session is', session
-        query_login_data = 'SELECT email, password FROM users WHERE email = :login_email'
+        query_login_data = 'SELECT email, pw_hash FROM users WHERE email = :login_email'
         login_data = {
                     'login_email': request.form['login_email']
                     }
@@ -133,7 +138,7 @@ def login():
             print 'email not found'
             valid=False
 
-        elif login_password!=login_verification[0]['password']:
+        elif not bcrypt.check_password_hash(login_verification[0]['pw_hash'], login_password):
             flash('incorrect password', 'login')
             print 'incorrect password'
             valid=False
