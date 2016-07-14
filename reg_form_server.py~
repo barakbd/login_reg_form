@@ -1,0 +1,79 @@
+from flask import Flask, render_template, redirect, request, flash, session
+from datetime import datetime
+import os
+import re
+
+app=Flask(__name__)
+app.secret_key='hi'
+
+EMAIL_REGEX = re.compile(r'^[a-zA-Z0-9\.\+_-]+@[a-zA-Z0-9\._-]+\.[a-zA-Z]*$')
+
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/process', methods=['POST'])
+def process():
+    print 'info received - ', request.form
+
+    firstName=request.form['first_name']
+    lastName=request.form['last_name']
+    email=request.form['email']
+    birthday=request.form['birthday']
+    password=request.form['password']
+    password_verify=request.form['password_verify']
+
+    session['firstName'] = request.form['first_name']
+    session['lastName'] = request.form['last_name']
+    session['email'] = request.form['email']
+    session['birthday'] = request.form['birthday']
+    session['password'] = request.form['password']
+    session['password_verify'] = request.form['password_verify']
+    print firstName, lastName, email, password, password_verify
+    print 'nothing entered'
+
+    for key,value in request.form.items():
+        if not value:
+            flash('All fields are required')
+
+    if not firstName.isalpha():
+        flash('First Name - use only alphabet letters')
+
+    if not lastName.isalpha():
+        flash('Last Name - use only alphabet letters')
+
+    try:
+        datetime.strptime(birthday, '%m/%d/%Y')
+        if datetime.strptime(birthday, '%m/%d/%Y') > datetime.today():
+            flash("Can't put date in future")
+
+    except ValueError:
+        flash('Wrong date format', 'birthday')
+
+    # if datetime.strptime(birthday, '%m/%d/%Y') > datetime.today():
+    #     flash("Can't put date in future")
+
+    if not EMAIL_REGEX.match(email):
+        flash('invalid email address')
+
+    # if len(password)<8 or not PASSWORD_REGEX.match(password):
+    #     flash('Password must be more than 8 characters, contain 1 uppercase letter and a mixture of numbers and letters')
+
+    if len(password)<8 or password.islower() or password.isdigit() or password.isalpha():
+        flash('Password must be more than 8 characters, contain 1 uppercase letter and a mixture of numbers and letters')
+
+    if password != password_verify:
+        flash("passwords don't match")
+
+    flash('Success!')
+
+    return redirect('/')
+
+
+@app.route('/clear_session')
+def clear_session():
+    session.clear()
+    return redirect('/')
+
+app.run(debug=True)
