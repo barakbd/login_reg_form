@@ -7,8 +7,10 @@
     <meta name='description' content='Survey using flask and forms' />
     <meta name='keywords' content='Flask, forms, routing' />
 
-    <link rel='stylesheet' type='text/css' href={{ url_for( 'static', filename='css/login_reg.css' )}}
-    <script type='text/javascript' src={{ url_for( 'static', filename='js/login_reg.js' )}}>
+    <link rel='stylesheet' type='text/css' href={{ url_for( 'static', filename='css/the_wall.css' )}} />
+    <!-- <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"> -->
+
+    <script type='text/javascript' src={{ url_for( 'static', filename='js/the_wall.js' )}}>
     </script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.0.0/jquery.min.js"></script>
 
@@ -97,7 +99,27 @@
         </fieldset>
     </form>
 
-    <a href='/clear_session'><button>Clear Session</button></a>
+    <a  href='/clear_session'><button>Clear Session</button></a>
+
+    <button class='reset_password_button'> Reset Password</button>
+
+    <div class='reset_password_form'>
+      <form action='/reset_password' method='post'>
+        <input type='email' name='email_reset' placeholder='type your email' />
+        <input type='text' name='password_reset' placeholder='type new password' />
+        <input type='submit' value='Reset' />
+      </form>
+    </div>
+    <!-- Hidden - Reset Password -->
+    
+<script>
+$(function(){
+  $('.reset_password_button').click(function(){
+    $('.reset_password_form').toggle();
+  });
+});
+</script>
+
 
 </body>
 

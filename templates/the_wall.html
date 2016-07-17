@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Register/Login</title>
+    <meta charset='UTF-8' />
+    <meta name='description' content='Survey using flask and forms' />
+    <meta name='keywords' content='Flask, forms, routing' />
+
+    <link rel='stylesheet' type='text/css' href={{ url_for( 'static', filename='css/the_wall.css' )}} />
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+
+    <script type='text/javascript' src={{ url_for( 'static', filename='js/the_wall.js' )}}>
+    </script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.0.0/jquery.min.js"></script>
+
+</head>
+
+<body>
+    <nav>
+        <h1>Coding Dojo wall</h1>
+        <p>
+            welcome {{session['first_name']}}
+            <a href='/clear_session'>
+                <button>Logout</button>
+            </a>
+        </p>
+
+    </nav>
+
+    <!-- NEW POST -->
+    <div class='container'>
+        <h2> New Post </h2>
+        <div class='form-group'>
+            <form action='/new_post' id='new_post' method='post'>
+                <textarea class='form-control' name='new_post' id='new_post' value='{{session["new_post"]}}' placeholder='type your post here...'></textarea>
+                <input type="submit" value="Post" />
+            </form>
+        </div>
+
+    </div>
+    <!-- End new post form -->
+
+    <!-- Start Posts and Comments -->
+    <Main class='container'>
+
+      <!-- START SINGLE POST + COMMENTS + NEW COMMENT -->
+      {% for post in query_posts %}
+        <section>
+            <ul>
+                <li>
+                    <article>
+                        <h3>
+                          {{ post['first_name'] }} {{ post['last_name'] }}- {{ post['created_at'] }}
+                        </h3>
+                        <p class='well'>
+                          {{ post['post_text'] }}
+                        </p>
+                    </article>
+                </li>
+                <!-- END PARENT POST -->
+
+                <!-- START COMMENTS -->
+                <ul>
+                  <h3>Comments</h3>
+
+                  {% for comment in query_comments %}
+                  {% if post['post_id'] == comment['posts_post_id'] %}
+
+                    <li>
+                        <article>
+                            <h4>{{ comment['first_name'] }}  {{ comment['created_at'] }}</h4>
+                            <p class='well'>
+                              {{ comment['comment_text'] }}
+                            </p>
+                        </article>
+                    </li>
+                      {% endif %}
+                    {% endfor %}
+                    <!-- END SNIGLE COMMENT -->
+
+                </ul>
+                <!-- END COMMENTS -->
+                <div class='form-group'>
+                  <form action='/new_comment/{{ post['post_id'] }}' method='post'>
+                    <textarea class='form-control' name='new_comment' id='new_comment' placeholder='New comment...'></textarea>
+                    <input type='submit' value='comment' />
+                  </form>
+                </div>
+                <!-- End comment field -->
+            </ul>
+            <!-- END POST+COMMENTS -->
+
+        </section>
+        {% endfor %}
+
+        <!-- END POST + COMMENTS + NEW COMMENT -->
+
+    </Main>
+    <!-- END WALL POPLUATED -->
+
+</body>
+
+</html>
